@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Panel de Administración</title>
+  <link rel="shortcut icon" href="imag/descarga.png" type="image/x-icon">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #f0f0f0;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: white;
+    }
+
+    th,
+    td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+    }
+
+
+    #password {
+      width: 100%;
+      padding: 5px;
+
+    }
+
+    #email {
+      width: 100%;
+      padding: 5px;
+
+    }
+
+    button {
+      padding: 8px 12px;
+      margin: 5px;
+      cursor: pointer;
+    }
+
+    #acciones {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    #login-container {
+      max-width: 300px;
+      margin: 100px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    #admin-panel {
+      display: none;
+    }
+
+    .toggle-password {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Login -->
+  <div id="login-container">
+    <div id="loader" style="display:none; text-align:center; margin-top: 20px;">
+      <p>Cargando autenticación...</p>
+    </div>
+
+    <h1>Panel de Administración de Productos - <span id="JM DISTRIBUCIONES"></span></h1> <!--cambiar para nuevas tiendas -->
+    <input type="email" id="email" placeholder="Correo electrónico"><br><br>
+    <div style="position: relative; display: inline-block; width: 100%;">
+      <input type="password" id="password" placeholder="Contraseña">
+      <span onclick="togglePassword()" class="toggle-password">👁️</span>
+    </div>
+    <button onclick="login()">Ingresar</button>
+    <p id="mensaje-error" style="color:red;"></p>
+  </div>
+
+  <!-- Panel oculto hasta que se loguee -->
+  <div id="admin-panel">
+    <div style="text-align: center; margin-top: 20px;">
+      <input type="text" id="buscador-admin" placeholder="Buscar productos..."
+        style="width: 50%; padding: 10px; font-size: 16px;">
+    </div>
+
+    <h1>Panel de Administración de Productos</h1>
+
+    <div id="acciones">
+      <button onclick="agregarProducto()">➕ Agregar Producto</button>
+      <button onclick="guardarProductos()">💾 Guardar Cambios</button>
+      <button onclick="cerrarSesion()" style="background-color: darkred; color: white;">🔒 Cerrar sesión</button>
+    </div>
+
+    <table id="tabla-productos">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Precio</th>
+          <th>Categoria</th>
+          <th>tipo de venta</th>
+          <th>Imagen (URL)</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script type="module">
+   
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+    import {
+      getAuth,
+      signInWithEmailAndPassword,
+      onAuthStateChanged,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    import {
+      getFirestore,
+      collection,
+      getDocs,
+      addDoc,
+      updateDoc,
+      deleteDoc,
+      doc
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    import {
+      getStorage,
+      ref,
+      uploadBytes,
+      getDownloadURL
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
+    // Tu configuración de Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyA36uwBk0FBDc6rI16BAsqUNe_AXLpv62Q",
+      authDomain: "carniceriadonjose-48638.firebaseapp.com",
+      projectId: "carniceriadonjose-48638",
+      storageBucket: "carniceriadonjose-48638.appspot.com",
+      messagingSenderId: "322531750471",
+      appId: "1:322531750471:web:78e290c9c81eecc7be3762"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const storage = getStorage(app); 
+     const tiendaId = "JM DISTRIBUCIONES"; // cambiar para nuevas tiendas
+    const productosRef = collection(db, "tiendas", tiendaId, "productos");
+
+    // Función de login
+    window.login = async function () {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      const error = document.getElementById("mensaje-error");
+
+      try {
+        const credencial = await signInWithEmailAndPassword(auth, email, password);
+        sessionStorage.setItem("loginManual", "true");
+
+        // Ahora que el login fue exitoso, forzamos el cambio visual
+        document.getElementById("login-container").style.display = "none";
+        document.getElementById("admin-panel").style.display = "block";
+        mostrarProductos();
+
+        error.textContent = "";
+      } catch (e) {
+        console.error(e);
+        error.textContent = "❌ Correo o contraseña incorrectos.";
+      }
+    };
+
+    // Detectar si el usuario está logueado
+    onAuthStateChanged(auth, user => {
+      const login = document.getElementById("login-container");
+      const panel = document.getElementById("admin-panel");
+
+      const loginManual = sessionStorage.getItem("loginManual");
+
+      if (user && loginManual === "true") {
+        login.style.display = "none";
+        panel.style.display = "block";
+        mostrarProductos();
+      } else {
+        login.style.display = "block";
+        panel.style.display = "none";
+      }
+    });
+
+    // Cerrar sesión
+    window.cerrarSesion = function () {
+      sessionStorage.removeItem("loginManual");
+      signOut(auth);
+    };
+
+    let productos = [];
+    let productosOriginales = [];
+
+    async function mostrarProductos() {
+      document.getElementById("loader") // mostrar loader
+
+      // Si hay productos cacheados en sessionStorage, mostralos primero
+      const cache = sessionStorage.getItem("productosAdmin");
+      if (cache) {
+        productos = JSON.parse(cache);
+        renderTabla();
+      }
+
+      try {
+        const snapshot = await getDocs(productosRef);
+        productos = snapshot.docs.map(docSnap => ({
+          id: docSnap.id,
+          ...docSnap.data()
+        }));
+        productosOriginales = JSON.parse(JSON.stringify(productos)); // Copia profunda
+
+
+        sessionStorage.setItem("productosAdmin", JSON.stringify(productos));
+        renderTabla();
+      } catch (error) {
+        alert("❌ Error al cargar los productos desde Firebase");
+        console.error(error);
+      } finally {
+        document.getElementById("loader").style.display = "none"; // ocultar loader
+      }
+    }
+
+    window.editar = function (index, campo, valor) {
+      productos[index][campo] = campo === 'precio' ? parseFloat(valor) : valor;
+    };
+
+    window.agregarProducto = function () {
+      productos.unshift({
+        nombre: "",
+        precio: 0,
+        imagen: "",
+        categoria: "Arroz",
+        tipoVenta: "kg",
+        id: null
+      });
+      renderTabla();
+    };
+
+    function renderTabla(lista = productos) {
+      const tbody = document.querySelector("#tabla-productos tbody");
+      tbody.innerHTML = "";
+
+      lista.forEach((prod, index) => {
+        const fila = document.createElement("tr");
+        fila.innerHTML = `
+      <td><input type="text" value="${prod.nombre}" onchange="editar(${index}, 'nombre', this.value)"></td>
+      <td><input type="number" value="${prod.precio}" onchange="editar(${index}, 'precio', this.value)"></td>
+      <td>
+        <select onchange="editar(${index}, 'categoria', this.value)">
+  <option value="Arroz" ${prod.categoria === "Arroz" ? "selected" : ""}>Arroz</option>
+  <option value="Fideo" ${prod.categoria === "Fideo" ? "selected" : ""}>Fideo</option>
+  <option value="Harina" ${prod.categoria === "Harina" ? "selected" : ""}>Harina</option>
+  <option value="Azucar" ${prod.categoria === "Azucar" ? "selected" : ""}>Azucar</option>
+  <option value="Aceite" ${prod.categoria === "Aceite" ? "selected" : ""}>Aceite</option>
+  <option value="Yerba" ${prod.categoria === "Yerba" ? "selected" : ""}>Yerba</option>
+   <option value="Oferta" ${prod.categoria === "Oferta" ? "selected" : ""}>Oferta</option>
+</select>
+
+        </select>
+      </td>
+      <td>
+        <select onchange="editar(${index}, 'tipoVenta', this.value)">
+  <option value="kg" ${prod.tipoVenta === "kg" ? "selected" : ""}>Kg</option>
+  <option value="500 grs" ${prod.tipoVenta === "500 grs" ? "selected" : ""}>500 grs</option>
+  <option value="500ml" ${prod.tipoVenta === "500 ml" ? "selected" : ""}>500 ml</option>
+  <option value="900 ml" ${prod.tipoVenta === "900 ml" ? "selected" : ""}>900 ml</option>
+  <option value="1 LT" ${prod.tipoVenta === "1 LT" ? "selected" : ""}>1 LT</option>
+   <option value="1,5 LT" ${prod.tipoVenta === "1,5 LT" ? "selected" : ""}>1,5 LT</option>
+   <option value="2,25 LT" ${prod.tipoVenta === "2,25 LT" ? "selected" : ""}>2,25 LT</option>
+   <option value="3 LT" ${prod.tipoVenta === "3 LT" ? "selected" : ""}>3 LT</option>
+  <option value="Unidad" ${prod.tipoVenta === "Unidad" ? "selected" : ""}>Unidad</option>
+  <option value="Pack" ${prod.tipoVenta === "Pack" ? "selected" : ""}>Pack</option>
+</select>
+
+        </select>
+      </td>
+      <td>
+      <input type="text" value="${prod.imagen}" onchange="editar(${index}, 'imagen', this.value)" style="width: 90%; margin-top: 5px; text-align: center;">
+      <div style="text-align: center; margin-top: 5px;">  ${prod.imagen ? `<img src="${prod.imagen}" style="max-width: 80px; display: inline-block;"> ✅` : '❌ Sin imagen'}
+      </div>
+
+      </td>
+      <td><button onclick="eliminarProducto('${prod.id}', ${index})">🗑️ Eliminar</button></td>
+    `;
+        tbody.appendChild(fila);
+      });
+    }
+
+    window.eliminarProducto = async function (id) {
+      if (confirm("¿Estás seguro de eliminar este producto?")) {
+        await deleteDoc(doc(productosRef, id));
+        await mostrarProductos();
+      }
+    };
+
+    window.guardarProductos = async function () {
+      sessionStorage.removeItem("productosAdmin");
+
+      try {
+        const operaciones = [];
+
+        for (let i = 0; i < productos.length; i++) {
+          const prod = productos[i]; // usamos un nombre más claro y seguro
+          const original = productosOriginales.find(p => p.id === prod.id);
+
+          const data = {
+            nombre: prod.nombre,
+            precio: prod.precio,
+            imagen: prod.imagen,
+            categoria: prod.categoria,
+            tipoVenta: prod.tipoVenta
+          };
+
+          if (!prod.id) {
+            operaciones.push(addDoc(productosRef, data));
+          } else if (
+            !original ||
+            original.nombre !== prod.nombre ||
+            original.precio !== prod.precio ||
+            original.imagen !== prod.imagen ||
+            original.categoria !== prod.categoria ||
+            original.tipoVenta !== prod.tipoVenta
+          ) {
+            const ref = doc(productosRef, prod.id);
+            operaciones.push(updateDoc(ref, data));
+          }
+        }
+
+        await Promise.all(operaciones);
+        alert("✅ Productos guardados correctamente.");
+        await mostrarProductos();
+      } catch (error) {
+        alert("❌ Error al guardar productos.");
+        console.error(error);
+      }
+    };
+
+    // OPCIONAL: Notificar a otros dispositivos
+    localStorage.setItem("productosActualizados", Date.now());
+
+    // Buscar productos en tiempo real en admin
+    document.getElementById("buscador-admin").addEventListener("input", e => {
+  const texto = e.target.value.toLowerCase();
+  const filtrados = productos.filter(p => (p.nombre || "").toLowerCase().includes(texto));
+  renderTabla(filtrados);
+});
+
+
+    window.cerrarSesion = () => signOut(auth);
+
+    // Mostrar/ocultar contraseña
+    window.subirImagen = async function (input, index) {
+      const archivo = input.files[0];
+      if (!archivo) return;
+
+      const nombreArchivo = `${Date.now()}_${archivo.name}`;
+      const ruta = ref(storage, `productos/${tiendaId}/${nombreArchivo}`);
+
+      try {
+        await uploadBytes(ruta, archivo);
+        const url = await getDownloadURL(ruta);
+
+        editar(index, 'imagen', url); // Actualiza imagen en el objeto
+        alert("✅ Imagen subida correctamente.");
+
+        const celda = input.closest('td');
+        celda.querySelector("small").innerHTML = `<img src="${url}" width="50"> ✅`;
+
+      } catch (error) {
+        alert("❌ Error al subir la imagen.");
+        console.error(error);
+      }
+    };
+
+    window.productos = productos;
+  </script>
+  <script>
+    function togglePassword() {
+      const input = document.getElementById("password");
+      input.type = input.type === "password" ? "text" : "password";
+    }
+    document.getElementById("JM DISTRIBUCIONES").textContent = tiendaId; //cambiar para nuevas tiendas
+    window.productos = productos;
+
+
+  </script>
+
+
+</body>
+
+</html>

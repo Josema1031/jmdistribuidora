@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JM DISTRIBUCIONES</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="shortcut icon" href="imag/LOGOPNG.png" type="image/x-icon"> <!--cambiar para nuevas tiendas -->
+
+
+</head>
+
+<body>
+  <header class="header">
+  <div class="logo-contenedor">
+    <img src="imag/LOGOPNG.png" alt="Logo JMDISTRIBUCIONES" class="logo"> <!--cambiar para nuevas tiendas -->
+    <h1>JM DISTRIBUCIONES</h1> <!--cambiar para nuevas tiendas -->
+  </div>
+  <p>Calidad y precio justo en tu mesa</p>
+</header>
+
+ <div id="menu-categorias">
+  <button onclick="filtrarCategoria('todo')">Todos</button>
+  <button onclick="filtrarCategoria('Arroz')">Arroz</button>
+  <button onclick="filtrarCategoria('Fideo')">Fideo</button>
+  <button onclick="filtrarCategoria('Harina')">Harina</button>
+  <button onclick="filtrarCategoria('Azucar')">Azucar</button>
+  <button onclick="filtrarCategoria('Aceite')">Aceite</button>
+  <button onclick="filtrarCategoria('Yerba')">Yerba</button>
+  <button onclick="filtrarCategoria('Oferta')">Oferta</button>
+</div>
+
+
+  <div id="loader" style="text-align:center; margin: 30px 0; font-size: 18px;">
+  <p>Cargando productos...</p>
+</div>
+
+  <main>
+    <input type="text" id="buscador" placeholder="Buscar productos..." style="width: 35%; padding: 10px; margin-bottom: 20px; font-size: 16px;">
+    <div class="productos" id="contenedor-productos"></div>
+    <div style="text-align:center; margin: 20px;"><button id="btn-mostrar-mas" onclick="mostrarMasProductos()">Más productos</button></div>
+
+  </main>
+
+  <div id="carrito-flotante">
+      <button id="toggle-carrito">🛒 Ver carrito</button>
+      <div id="carrito-contenido" class="oculto">
+        <h2>Carrito de Compra</h2>
+        <ul id="lista-carrito"></ul>
+        <p id="total">Total: $0</p>
+        <button id="btn-vaciar" style="background: gray; color: white; margin-top: 10px;">Vaciar carrito</button>
+        <button id="btn-enviar">Enviar pedido por WhatsApp</button>
+      </div>
+  </div>
+
+
+  <div id="modal-producto" class="modal oculto">
+    <div class="modal-contenido">
+      <span class="cerrar" onclick="cerrarModal()">&times;</span>
+      <img id="modal-imagen" src="" alt="" style="max-width: 100%; border-radius: 8px;">
+      <h2 id="modal-nombre"></h2>
+      <p id="modal-precio"></p>
+      <p id="modal-descripcion"></p>
+      <button id="modal-agregar">Agregar al carrito</button>
+    </div>
+  </div>
+
+  <footer id="footer">
+  <p><strong>📍 Ubicación:</strong> Av. San Martín 123, Gualeguay (ER)</p> <!--cambiar para nuevas tiendas -->
+  <p><strong>🕒 Horario de atención:</strong> Lunes a Sábado de 8:00 a 13:00 y de 17:00 a 21:00 hs</p> <!--cambiar para nuevas tiendas -->
+</footer>
+
+
+<script type="module" src="script.js"></script>
+
+
+</body>
+</html>
