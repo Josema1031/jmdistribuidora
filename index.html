@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>JM DISTRIBUCIONES</title>
+  <title>JD DISTRIBUCIONES</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="shortcut icon" href="imag/LOGOPNG.png" type="image/x-icon"> <!--cambiar para nuevas tiendas -->
 
@@ -14,10 +14,10 @@
   <header class="header">
   <div class="logo-contenedor">
     <img src="imag/LOGOPNG.png" alt="Logo JMDISTRIBUCIONES" class="logo"> <!--cambiar para nuevas tiendas -->
-    <h1>JM DISTRIBUCIONES</h1> <!--cambiar para nuevas tiendas -->
+    <h1>JD DISTRIBUCIONES</h1> <!--cambiar para nuevas tiendas -->
   </div>
   <p>Calidad y precio justo en tu mesa</p>
-</header>
+  </header>
 
  <div id="menu-categorias">
   <button onclick="filtrarCategoria('todo')">Todos</button>
@@ -27,20 +27,21 @@
   <button onclick="filtrarCategoria('Azucar')">Azucar</button>
   <button onclick="filtrarCategoria('Aceite')">Aceite</button>
   <button onclick="filtrarCategoria('Yerba')">Yerba</button>
+  <button onclick="filtrarCategoria('Bebidas')">Bebidas</button>
   <button onclick="filtrarCategoria('Oferta')">Oferta</button>
-</div>
+  <button onclick="filtrarCategoria('Sin Stock')">Sin Stock</button>
+ </div>
 
 
   <div id="loader" style="text-align:center; margin: 30px 0; font-size: 18px;">
   <p>Cargando productos...</p>
-</div>
+  </div>
 
   <main>
     <input type="text" id="buscador" placeholder="Buscar productos..." style="width: 35%; padding: 10px; margin-bottom: 20px; font-size: 16px;">
     <div class="productos" id="contenedor-productos"></div>
     <div style="text-align:center; margin: 20px;"><button id="btn-mostrar-mas" onclick="mostrarMasProductos()">Más productos</button></div>
-
-  </main>
+   </main>
 
   <div id="carrito-flotante">
       <button id="toggle-carrito">🛒 Ver carrito</button>
@@ -68,10 +69,10 @@
   <footer id="footer">
   <p><strong>📍 Ubicación:</strong> Av. San Martín 123, Gualeguay (ER)</p> <!--cambiar para nuevas tiendas -->
   <p><strong>🕒 Horario de atención:</strong> Lunes a Sábado de 8:00 a 13:00 y de 17:00 a 21:00 hs</p> <!--cambiar para nuevas tiendas -->
-</footer>
+  </footer>
 
 
-<script type="module" src="script.js"></script>
+ <script type="module" src="script.js"></script>
 
 
 </body>

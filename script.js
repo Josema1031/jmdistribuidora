@@ -35,7 +35,10 @@ async function cargarProductos() {
   document.getElementById("loader").style.display = "block";
   try {
     const snapshot = await getDocs(productosRef);
-    productosCargados = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    productosCargados = snapshot.docs
+      .map(doc => ({ id: doc.id, ...doc.data() }))
+      .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0));
+
     mostrarProductos(productosCargados);
   } catch (error) {
     console.error("Error cargando productos:", error);
@@ -151,11 +154,13 @@ document.getElementById("btn-enviar").addEventListener("click", () => {
     return;
   }
 
-  const mensajeProductos = carrito.map(p => `${p.nombre} - $${p.precio} x ${p.cantidad}`).join("\n");
+  const mensajeProductos = carrito.map((p, i) => `${i + 1}. ${p.nombre} - $${p.precio} x ${p.cantidad}`).join("\n");
   const total = carrito.reduce((acc, p) => acc + p.precio * p.cantidad, 0);
   const mensajeCompleto = `${mensajeProductos}\n\nTotal del pedido: $${total}`;
 
   const url = `https://wa.me/5492644429649?text=Hola, quiero hacer el siguiente pedido:%0A${encodeURIComponent(mensajeCompleto)}`;
+  window.open(url, "_blank");
+
 
   window.open(url, "_blank");
   carrito = [];
@@ -189,12 +194,27 @@ function cargarMasProductos(lista) {
 
     const div = document.createElement("div");
     div.className = "card";
+    let descuento = prod.descuento;
+    if (!descuento && prod.precioAnterior && prod.precioAnterior > prod.precio) {
+      descuento = Math.round(100 - (prod.precio * 100) / prod.precioAnterior);
+    }
+
     div.innerHTML = `
-      <img src="${prod.imagen}" alt="${prod.nombre}" style="cursor: pointer;" onclick="abrirModal('${prod.id}')">
-      <h3>${prod.nombre}</h3>
-      <p>${prod.tipoVenta} por $${prod.precio || 'unidad'}</p>
-      <button onclick="agregarAlCarrito('${prod.id}', '${prod.nombre.replaceAll("'", "\\'")}', ${prod.precio})">Agregar</button>
-    `;
+  <div class="card-contenido">
+    ${descuento ? `<span class="etiqueta-descuento">-${descuento}%</span>` : ""}
+    <img src="${prod.imagen}" alt="${prod.nombre}" style="cursor: pointer;" onclick="abrirModal('${prod.id}')">
+    <h3>${prod.nombre}</h3>
+    <p>${prod.tipoVenta}</p>
+    <p class="precio">
+      ${prod.precioAnterior && prod.precioAnterior > prod.precio
+        ? `<span class="precio-anterior">$${prod.precioAnterior}</span>`
+        : ""}
+      <span class="precio-actual">$${prod.precio}</span>
+    </p>
+    <button onclick="agregarAlCarrito('${prod.id}', '${prod.nombre.replaceAll("'", "\\'")}', ${prod.precio})">Agregar</button>
+  </div>
+`;
+
     contenedor.appendChild(div);
   });
 
