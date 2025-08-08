@@ -99,6 +99,81 @@
       top: 10px;
       right: 10px;
     }
+    /* Mantener ancho fijo y columnas equilibradas */
+#tabla-productos {
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+/* Ajuste de anchos por columna */
+#tabla-productos th:nth-child(1),
+#tabla-productos td:nth-child(1) { width: 170px; } /* Nombre */
+
+#tabla-productos th:nth-child(2),
+#tabla-productos td:nth-child(2) { width: 80px; } /* Precio */
+
+#tabla-productos th:nth-child(3),
+#tabla-productos td:nth-child(3) { width: 90px; } /* Precio anterior */
+
+#tabla-productos th:nth-child(4),
+#tabla-productos td:nth-child(4) { width: 80px; } /* % Desc. */
+
+#tabla-productos th:nth-child(5),
+#tabla-productos td:nth-child(5) { width: 90px; } /* Precio Unitario */
+
+#tabla-productos th:nth-child(6),
+#tabla-productos td:nth-child(6) { width: 100px; } /* Precio Mayorista */
+
+#tabla-productos th:nth-child(7),
+#tabla-productos td:nth-child(7) { width: 80px; } /* Unidades x Pack */
+
+#tabla-productos th:nth-child(8),
+#tabla-productos td:nth-child(8) { width: 100px; } /* Categoría */
+
+#tabla-productos th:nth-child(9),
+#tabla-productos td:nth-child(9) { width: 100px; } /* Tipo de venta */
+
+#tabla-productos th:nth-child(10),
+#tabla-productos td:nth-child(10) { width: 200px; } /* Imagen */
+
+#tabla-productos th:nth-child(11),
+#tabla-productos td:nth-child(11) { width: 80px; } /* Acciones */
+
+/* Compactar inputs y selects */
+#tabla-productos input,
+#tabla-productos select {
+  width: 100%;
+  padding: 4px;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+/* Imagen más pequeña */
+#tabla-productos img {
+  max-width: 50px;
+  height: auto;
+}
+
+/* Bordes y estilo */
+#tabla-productos th, #tabla-productos td {
+  border: 1px solid #ddd;
+  padding: 6px;
+  text-align: center;
+}
+
+/* Encabezado con fondo */
+#tabla-productos th {
+  background-color: #f5f5f5;
+  font-weight: bold;
+}
+
+/* Contenedor con scroll horizontal si es necesario */
+.tabla-contenedor {
+  overflow-x: auto;
+}
+
   </style>
 </head>
 
@@ -143,7 +218,9 @@
           <th>Precio</th>
           <th>Precio Anterior</th>
           <th>% Descuento</th>
-
+          <th>Precio Unitario</th>
+          <th>Precio Mayorista</th>
+          <th>Unidades por Pack</th>
           <th>Categoria</th>
           <th>tipo de venta</th>
           <th>Imagen (URL)</th>
@@ -298,44 +375,44 @@
 
 
     window.editar = function (index, campo, valor) {
-  if (campo === 'precio' || campo === 'precioAnterior' || campo === 'descuento') {
-    productos[index][campo] = valor === "" ? null : parseFloat(valor);
+      if (campo === 'precio' || campo === 'precioAnterior' || campo === 'descuento') {
+        productos[index][campo] = valor === "" ? null : parseFloat(valor);
 
-    const precio = parseFloat(productos[index].precio);
-    const precioAnterior = parseFloat(productos[index].precioAnterior);
-    const descuento = parseFloat(productos[index].descuento);
+        const precio = parseFloat(productos[index].precio);
+        const precioAnterior = parseFloat(productos[index].precioAnterior);
+        const descuento = parseFloat(productos[index].descuento);
 
-    const filas = document.querySelectorAll("#tabla-productos tbody tr");
-    const fila = filas[index % 10]; // Solo para la página actual
+        const filas = document.querySelectorAll("#tabla-productos tbody tr");
+        const fila = filas[index % 10]; // Solo para la página actual
 
-    // Si escribís el descuento, calcular precioAnterior
-    if (campo === 'descuento' && !isNaN(descuento) && !isNaN(precio) && descuento > 0 && descuento < 100) {
-      const nuevoPrecioAnterior = Math.round(precio / (1 - descuento / 100));
-      productos[index].precioAnterior = nuevoPrecioAnterior;
+        // Si escribís el descuento, calcular precioAnterior
+        if (campo === 'descuento' && !isNaN(descuento) && !isNaN(precio) && descuento > 0 && descuento < 100) {
+          const nuevoPrecioAnterior = Math.round(precio / (1 - descuento / 100));
+          productos[index].precioAnterior = nuevoPrecioAnterior;
 
-      // Actualizar visualmente el input de precioAnterior
-      if (fila) {
-        const inputPrecioAnterior = fila.querySelectorAll("td input")[2]; // índice 2 = precioAnterior
-        if (inputPrecioAnterior) inputPrecioAnterior.value = nuevoPrecioAnterior;
+          // Actualizar visualmente el input de precioAnterior
+          if (fila) {
+            const inputPrecioAnterior = fila.querySelectorAll("td input")[2]; // índice 2 = precioAnterior
+            if (inputPrecioAnterior) inputPrecioAnterior.value = nuevoPrecioAnterior;
+          }
+        }
+
+        // Si escribís el precioAnterior, calcular descuento
+        if (campo === 'precioAnterior' && !isNaN(precio) && !isNaN(precioAnterior) && precioAnterior > precio) {
+          const nuevoDescuento = Math.round((1 - precio / precioAnterior) * 100);
+          productos[index].descuento = nuevoDescuento;
+
+          // Actualizar visualmente el input de descuento
+          if (fila) {
+            const inputDescuento = fila.querySelectorAll("td input")[3]; // índice 3 = descuento
+            if (inputDescuento) inputDescuento.value = nuevoDescuento;
+          }
+        }
+
+      } else {
+        productos[index][campo] = valor;
       }
-    }
-
-    // Si escribís el precioAnterior, calcular descuento
-    if (campo === 'precioAnterior' && !isNaN(precio) && !isNaN(precioAnterior) && precioAnterior > precio) {
-      const nuevoDescuento = Math.round((1 - precio / precioAnterior) * 100);
-      productos[index].descuento = nuevoDescuento;
-
-      // Actualizar visualmente el input de descuento
-      if (fila) {
-        const inputDescuento = fila.querySelectorAll("td input")[3]; // índice 3 = descuento
-        if (inputDescuento) inputDescuento.value = nuevoDescuento;
-      }
-    }
-
-  } else {
-    productos[index][campo] = valor;
-  }
-};
+    };
 
 
 
@@ -373,7 +450,11 @@
 <td><input type="number" value="${prod.precio}" onchange="editar(${inicio + index}, 'precio', this.value)"></td>
 <td><input type="number" value="${prod.precioAnterior ?? ''}" onchange="editar(${inicio + index}, 'precioAnterior', this.value)"></td>
 <td><input type="number" value="${prod.descuento ?? ''}" onchange="editar(${inicio + index}, 'descuento', this.value)"></td>
-      <td>
+<td><input type="number" value="${prod.precioUnitario ?? ''}" onchange="editar(${inicio + index}, 'precioUnitario', this.value)"></td>
+<td><input type="number" value="${prod.precioMayorista ?? ''}" onchange="editar(${inicio + index}, 'precioMayorista', this.value)"></td>
+<td><input type="number" value="${prod.unidadesPack ?? ''}" onchange="editar(${inicio + index}, 'unidadesPack', this.value)"></td>
+     
+<td>
         <select onchange="editar(${inicio + index}, 'categoria', this.value)">
           <option value="Arroz" ${prod.categoria === "Arroz" ? "selected" : ""}>Arroz</option>
           <option value="Fideo" ${prod.categoria === "Fideo" ? "selected" : ""}>Fideo</option>
@@ -389,17 +470,26 @@
       </td>
       <td>
         <select onchange="editar(${inicio + index}, 'tipoVenta', this.value)">
-          <option value="kg" ${prod.tipoVenta === "kg" ? "selected" : ""}>Kg</option>
+          <option value="25 grs" ${prod.tipoVenta === "25grs" ? "selected" : ""}>25 grs</option>
+          <option value="50 grs" ${prod.tipoVenta === "50 grs" ? "selected" : ""}>50 grs</option>
+          <option value="100 grs" ${prod.tipoVenta === "100 grs" ? "selected" : ""}>100 grs</option>
+          <option value="120 grs" ${prod.tipoVenta === "120 grs" ? "selected" : ""}>120 grs</option>
+          <option value="250 grs" ${prod.tipoVenta === "250 grs" ? "selected" : ""}>250 grs</option>
           <option value="500 grs" ${prod.tipoVenta === "500 grs" ? "selected" : ""}>500 grs</option>
-          <option value="500ml" ${prod.tipoVenta === "500 ml" ? "selected" : ""}>500 ml</option>
+           <option value="400 grs" ${prod.tipoVenta === "400 grs" ? "selected" : ""}>400 grs</option>
+            <option value="800 grs" ${prod.tipoVenta === "800 grs" ? "selected" : ""}>800 grs</option>
+          <option value="kg" ${prod.tipoVenta === "kg" ? "selected" : ""}>Kg</option>
+          <option value="200 ml" ${prod.tipoVenta === "200 ml" ? "selected" : ""}>200 ml</option>
+          <option value="250 ml" ${prod.tipoVenta === "250 ml" ? "selected" : ""}>250 ml</option>
+          <option value="330 ml" ${prod.tipoVenta === "330 ml" ? "selected" : ""}>330 ml</option>          
+          <option value="500 ml" ${prod.tipoVenta === "500 ml" ? "selected" : ""}>500 ml</option>
           <option value="900 ml" ${prod.tipoVenta === "900 ml" ? "selected" : ""}>900 ml</option>
           <option value="1 LT" ${prod.tipoVenta === "1 LT" ? "selected" : ""}>1 LT</option>
           <option value="1,5 LT" ${prod.tipoVenta === "1,5 LT" ? "selected" : ""}>1,5 LT</option>
           <option value="2,25 LT" ${prod.tipoVenta === "2,25 LT" ? "selected" : ""}>2,25 LT</option>
+          <option value="2,5 LT" ${prod.tipoVenta === "2,5 LT" ? "selected" : ""}>2,5 LT</option>
           <option value="3 LT" ${prod.tipoVenta === "3 LT" ? "selected" : ""}>3 LT</option>
-          <option value="Unidad" ${prod.tipoVenta === "Unidad" ? "selected" : ""}>Unidad</option>
-          <option value="Pack" ${prod.tipoVenta === "Pack" ? "selected" : ""}>Pack</option>
-          
+          <option value="5 LT" ${prod.tipoVenta === "5 LT" ? "selected" : ""}>5 LT</option>
         </select>
       </td>
       <td>
@@ -467,28 +557,38 @@
             imagen: producto.imagen,
             categoria: producto.categoria,
             tipoVenta: producto.tipoVenta,
+            precioMayorista: producto.precioMayorista ?? null,
+            precioUnitario: producto.precioUnitario ?? null,
+            unidadesPack: producto.unidadesPack ?? null,
             orden: i
           };
 
 
+
           if (!producto.id) {
             const docRef = await addDoc(productosRef, data);
+           
+
             producto.id = docRef.id;
           } else {
             const original = productosOriginales.find(p => p.id === producto.id);
             if (
-              !original ||
-              original.nombre !== producto.nombre ||
-              original.precio !== producto.precio ||
-              original.precioAnterior !== producto.precioAnterior ||
-              original.descuento !== producto.descuento ||
-              original.imagen !== producto.imagen ||
-              original.categoria !== producto.categoria ||
-              original.tipoVenta !== producto.tipoVenta
-            ) {
-              const ref = doc(productosRef, producto.id);
-              operaciones.push(updateDoc(ref, data));
-            }
+  !original ||
+  original.nombre !== producto.nombre ||
+  original.precio !== producto.precio ||
+  original.precioAnterior !== producto.precioAnterior ||
+  original.descuento !== producto.descuento ||
+  original.imagen !== producto.imagen ||
+  original.categoria !== producto.categoria ||
+  original.tipoVenta !== producto.tipoVenta ||
+  original.precioUnitario !== producto.precioUnitario ||
+  original.precioMayorista !== producto.precioMayorista ||
+  original.unidadesPack !== producto.unidadesPack
+) {
+    const ref = doc(productosRef, producto.id);
+    operaciones.push(updateDoc(ref, data));
+}
+
 
           }
         }
@@ -499,7 +599,10 @@
         productosOriginales = JSON.parse(JSON.stringify(productos));
 
         alert("✅ Productos guardados correctamente.");
+        localStorage.setItem("productosActualizados", Date.now());
         renderTabla(); // solo vuelve a renderizar lo que ya está actualizado
+
+        
 
       } catch (error) {
         console.error("❌ Error al guardar productos:", error);

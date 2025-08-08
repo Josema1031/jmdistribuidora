@@ -66,8 +66,10 @@ function mostrarCarrito() {
 
   carrito.forEach((prod, index) => {
     const subtotal = prod.precio * prod.cantidad;
+    const tipo = prod.cantidad >= prod.unidadesPack ? "Mayorista" : "Unitario";
+
     const li = document.createElement("li");
-    li.innerHTML = `${prod.nombre} - $${prod.precio} x ${prod.cantidad} = <strong>$${subtotal}</strong><br>`;
+    li.innerHTML = `${prod.nombre} (${tipo}) - $${prod.precio} x ${prod.cantidad} = <strong>$${subtotal}</strong><br>`;
 
     const btnMenos = document.createElement("button");
     btnMenos.textContent = "➖";
@@ -107,19 +109,44 @@ function actualizarCarrito() {
 }
 
 // Agregar producto
-function agregarAlCarrito(id, nombre, precio) {
+function agregarAlCarrito(id, nombre, precioBase) {
+  const producto = productosCargados.find(p => p.id === id);
+  if (!producto) return;
+
   const index = carrito.findIndex(p => p.id === id);
+
   if (index !== -1) {
     carrito[index].cantidad += 1;
   } else {
-    carrito.push({ id, nombre, precio, cantidad: 1 });
+    const precioInicial = producto.precioUnitario || producto.precio || precioBase;
+    carrito.push({ 
+      id, 
+      nombre, 
+      cantidad: 1, 
+      precio: precioInicial,
+      precioUnitario: producto.precioUnitario || producto.precio,
+      precioMayorista: producto.precioMayorista || producto.precio,
+      unidadesPack: producto.unidadesPack || 6
+    });
   }
+
+  actualizarPreciosPorCantidad();
   actualizarCarrito();
+}
+
+// Actualizar precio según cantidad
+function actualizarPreciosPorCantidad() {
+  carrito = carrito.map(p => {
+    const umbral = p.unidadesPack || 6;
+    const nuevoPrecio = (p.cantidad >= umbral) ? p.precioMayorista : p.precioUnitario;
+    return { ...p, precio: nuevoPrecio };
+  });
 }
 
 // Aumentar cantidad
 function aumentarCantidad(index) {
   carrito[index].cantidad += 1;
+  actualizarPreciosPorCantidad();
   actualizarCarrito();
 }
 
@@ -130,6 +157,7 @@ function disminuirCantidad(index) {
   } else {
     carrito.splice(index, 1);
   }
+  actualizarPreciosPorCantidad();
   actualizarCarrito();
 }
 
@@ -158,11 +186,9 @@ document.getElementById("btn-enviar").addEventListener("click", () => {
   const total = carrito.reduce((acc, p) => acc + p.precio * p.cantidad, 0);
   const mensajeCompleto = `${mensajeProductos}\n\nTotal del pedido: $${total}`;
 
-  const url = `https://wa.me/5492644429649?text=Hola, quiero hacer el siguiente pedido:%0A${encodeURIComponent(mensajeCompleto)}`;
+  const url = `https://wa.me/5493444579137?text=Hola, quiero hacer el siguiente pedido:%0A${encodeURIComponent(mensajeCompleto)}`;
   window.open(url, "_blank");
 
-
-  window.open(url, "_blank");
   carrito = [];
   actualizarCarrito();
   window.location.href = "gracias.html";
@@ -200,20 +226,21 @@ function cargarMasProductos(lista) {
     }
 
     div.innerHTML = `
-  <div class="card-contenido">
-    ${descuento ? `<span class="etiqueta-descuento">-${descuento}%</span>` : ""}
-    <img src="${prod.imagen}" alt="${prod.nombre}" style="cursor: pointer;" onclick="abrirModal('${prod.id}')">
-    <h3>${prod.nombre}</h3>
-    <p>${prod.tipoVenta}</p>
-    <p class="precio">
-      ${prod.precioAnterior && prod.precioAnterior > prod.precio
-        ? `<span class="precio-anterior">$${prod.precioAnterior}</span>`
-        : ""}
-      <span class="precio-actual">$${prod.precio}</span>
-    </p>
-    <button onclick="agregarAlCarrito('${prod.id}', '${prod.nombre.replaceAll("'", "\\'")}', ${prod.precio})">Agregar</button>
-  </div>
-`;
+      <div class="card-contenido">
+        ${descuento ? `<span class="etiqueta-descuento">-${descuento}%</span>` : ""}
+        <img src="${prod.imagen}" alt="${prod.nombre}" style="cursor: pointer;" onclick="abrirModal('${prod.id}')">
+        <h3>${prod.nombre}</h3>
+        <p>${prod.tipoVenta}</p>
+        ${prod.precioUnitario ? `<p><strong>Precio Unitario:</strong> $${prod.precioUnitario}</p>` : ""}
+        ${prod.precioMayorista ? `<p><strong>Precio Mayorista:</strong> $${prod.precioMayorista}</p>` : ""}
+        ${prod.unidadesPack ? `<p><strong>Unidades por pack:</strong> ${prod.unidadesPack}</p>` : ""}
+        <p class="precio">
+          ${prod.precioAnterior && prod.precioAnterior > prod.precio ? `<span class="precio-anterior">$${prod.precioAnterior}</span>` : ""}
+          <span class="precio-actual">$${prod.precio}</span>
+        </p>
+        <button onclick="agregarAlCarrito('${prod.id}', '${prod.nombre.replaceAll("'", "\\'")}', ${prod.precio})">Agregar</button>
+      </div>
+    `;
 
     contenedor.appendChild(div);
   });
@@ -276,12 +303,12 @@ function filtrarCategoria(categoria) {
 }
 window.filtrarCategoria = filtrarCategoria;
 
-// Exponer funciones globales si las usás desde HTML
+// Exponer funciones globales
 window.agregarAlCarrito = agregarAlCarrito;
 window.abrirModal = abrirModal;
 window.cerrarModal = cerrarModal;
 
-// Eventos
+// Sincronizar si cambia en otra pestaña
 window.addEventListener("storage", e => {
   if (e.key === "productosActualizados") {
     cargarProductos();

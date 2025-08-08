@@ -21,6 +21,7 @@
 
  <div id="menu-categorias">
   <button onclick="filtrarCategoria('todo')">Todos</button>
+  <button onclick="filtrarCategoria('Mayorista')">Mayorista</button>
   <button onclick="filtrarCategoria('Arroz')">Arroz</button>
   <button onclick="filtrarCategoria('Fideo')">Fideo</button>
   <button onclick="filtrarCategoria('Harina')">Harina</button>
@@ -67,13 +68,23 @@
   </div>
 
   <footer id="footer">
-  <p><strong>📍 Ubicación:</strong> Av. San Martín 123, Gualeguay (ER)</p> <!--cambiar para nuevas tiendas -->
-  <p><strong>🕒 Horario de atención:</strong> Lunes a Sábado de 8:00 a 13:00 y de 17:00 a 21:00 hs</p> <!--cambiar para nuevas tiendas -->
+  <p><strong>📍 Ubicación:</strong> Calle Juan Castares N° 374, Gualeguay (ER)</p> <!--cambiar para nuevas tiendas -->
+  <p><strong>🕒 Horario de atención:</strong> Lunes a Viernes de 8:30 a 12:30 y Sábado de 08:00 a 10:00 hs</p> <!--cambiar para nuevas tiendas -->
   </footer>
 
+ <!-- MODAL ELECCIÓN PRECIO -->
+<div id="modal-eleccion-precio" class="modal oculto">
+  <div class="modal-contenido">
+    <span class="cerrar" onclick="cerrarModalEleccion()">&times;</span>
+    <h3 id="titulo-eleccion">¿Cómo desea comprar?</h3>
+    <p id="nombre-producto-eleccion"></p>
+    <button id="btn-unitario">Por unidad</button>
+   
+  </div>
+</div>
 
- <script type="module" src="script.js"></script>
-
-
+<!-- Script principal -->
+<script type="module" src="script.js"></script>
 </body>
 </html>
+
