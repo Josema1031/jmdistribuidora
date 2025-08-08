@@ -226,18 +226,18 @@ function cargarMasProductos(lista) {
     }
 
     div.innerHTML = `
-      <div class="card-contenido">
-        ${descuento ? `<span class="etiqueta-descuento">-${descuento}%</span>` : ""}
-        <img src="${prod.imagen}" alt="${prod.nombre}" style="cursor: pointer;" onclick="abrirModal('${prod.id}')">
-        <h3>${prod.nombre}</h3>
-        <p>${prod.tipoVenta}</p>
-        ${prod.precioUnitario ? `<p><strong>Precio Unitario:</strong> $${prod.precioUnitario}</p>` : ""}
-        ${prod.precioMayorista ? `<p><strong>Precio Mayorista:</strong> $${prod.precioMayorista}</p>` : ""}
+  <div class="card-contenido">
+    ${descuento ? `<span class="etiqueta-descuento">-${descuento}%</span>` : ""}
+    <img src="${prod.imagen}" alt="${prod.nombre}" style="cursor: pointer;" onclick="abrirModal('${prod.id}')">
+    <h3>${prod.nombre}</h3>
+    <p>${prod.tipoVenta}</p>
+    <p class="precio">
+      ${prod.precioAnterior && prod.precioAnterior > prod.precio ? `<span class="precio-anterior">$${prod.precioAnterior}</span>` : ""}
+      <span class="precio-actual">$${prod.precio}</span>
+    </p>
+    <!-- ${prod.precioUnitario ? `<p><strong>Precio Unitario:</strong> $${prod.precioUnitario}</p>` : ""} -->
+    ${prod.precioMayorista ? `<p><strong>Precio Mayorista:</strong> $${prod.precioMayorista}</p>` : ""}
         ${prod.unidadesPack ? `<p><strong>Unidades por pack:</strong> ${prod.unidadesPack}</p>` : ""}
-        <p class="precio">
-          ${prod.precioAnterior && prod.precioAnterior > prod.precio ? `<span class="precio-anterior">$${prod.precioAnterior}</span>` : ""}
-          <span class="precio-actual">$${prod.precio}</span>
-        </p>
         <button onclick="agregarAlCarrito('${prod.id}', '${prod.nombre.replaceAll("'", "\\'")}', ${prod.precio})">Agregar</button>
       </div>
     `;

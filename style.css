@@ -366,14 +366,14 @@ header {
 
 .precio-anterior {
   text-decoration: line-through;
-  color: gray;
-  font-size: 14px;
+  color: red;
+  font-size: 15px;
 }
 
 .precio-actual {
   font-weight: bold;
   color:black;
-  font-size: 18px;
+  font-size: 20px;
 }
 
 .etiqueta-descuento {
